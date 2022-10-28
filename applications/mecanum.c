@@ -3,6 +3,9 @@
 //#include "sbus.h"
 #include "dbus.h"
 
+#include "imu.h"
+#include "ks103.h"
+
 struct rt_device_pwm *pwm_dev;      /* PWM设备句柄 */
 
 /*----------------------   pwm 周期占空比初始化配置   --------------------------*/
@@ -53,20 +56,20 @@ INIT_APP_EXPORT(mecanum_pwm_init);
 
 /* 解算方法 */
 
-static void motor_pwm_set1(rt_int16_t _p)
+static void motor_pwm_set1(rt_int32_t _p)
 {
     rt_int32_t __p = 0;
     __p = _p;
     
     if (_p >= 0)
     {
-        rt_pin_write(MECANUM_LF_A, PIN_HIGH);
-        rt_pin_write(MECANUM_LF_B, PIN_LOW);
+        rt_pin_write(MECANUM_LF_A, PIN_LOW);
+        rt_pin_write(MECANUM_LF_B, PIN_HIGH);
     }
     else
     {
-        rt_pin_write(MECANUM_LF_A, PIN_LOW);
-        rt_pin_write(MECANUM_LF_B, PIN_HIGH);
+        rt_pin_write(MECANUM_LF_A, PIN_HIGH);
+        rt_pin_write(MECANUM_LF_B, PIN_LOW);
         __p = -__p;
     }
  
@@ -76,20 +79,20 @@ static void motor_pwm_set1(rt_int16_t _p)
 }
 
 
-static void motor_pwm_set2(rt_int16_t _p)
+static void motor_pwm_set2(rt_int32_t _p)
 {
     rt_int32_t __p = 0;
     __p = _p;
     
     if (_p >= 0)
     {
-        rt_pin_write(MECANUM_LB_A, PIN_HIGH);
-        rt_pin_write(MECANUM_LB_B, PIN_LOW);
+        rt_pin_write(MECANUM_LB_A, PIN_LOW);
+        rt_pin_write(MECANUM_LB_B, PIN_HIGH);
     }
     else
     {
-        rt_pin_write(MECANUM_LB_A, PIN_LOW);
-        rt_pin_write(MECANUM_LB_B, PIN_HIGH);
+        rt_pin_write(MECANUM_LB_A, PIN_HIGH);
+        rt_pin_write(MECANUM_LB_B, PIN_LOW);
         __p = -__p;
     }
  
@@ -98,7 +101,7 @@ static void motor_pwm_set2(rt_int16_t _p)
     rt_pwm_set(pwm_dev, MECANUM_PWM_LB, 10000, __p);
 }
 
-static void motor_pwm_set3(rt_int16_t _p)
+static void motor_pwm_set3(rt_int32_t _p)
 {
     rt_int32_t __p = 0;
     __p = _p;
@@ -120,7 +123,7 @@ static void motor_pwm_set3(rt_int16_t _p)
     rt_pwm_set(pwm_dev, MECANUM_PWM_RB, 10000, __p);
 }
 
-static void motor_pwm_set4(rt_int16_t _p)
+static void motor_pwm_set4(rt_int32_t _p)
 {
     rt_int32_t __p = 0;
     __p = _p;
@@ -143,17 +146,26 @@ static void motor_pwm_set4(rt_int16_t _p)
 }
 
 
-static void chassis_control(rt_int16_t _x, rt_int16_t _y, rt_int16_t _r)
+static void chassis_control(rt_int32_t _x, rt_int32_t _y, rt_int32_t _r)
 {
-    rt_int16_t _lf = 0;
-    rt_int16_t _lb = 0;    
-    rt_int16_t _rb = 0;
-    rt_int16_t _rf = 0;
+    rt_int32_t _lf = 0;
+    rt_int32_t _lb = 0;    
+    rt_int32_t _rb = 0;
+    rt_int32_t _rf = 0;
     
-    _lf = _x - _y - _r;
-    _lb = _x + _y - _r;
-    _rb = _x + _y + _r;
-    _rf = _x - _y + _r;
+    
+    _lf = _y + _x + _r;
+    _lb = _y - _x + _r;
+    _rb = _y + _x - _r;
+    _rf = _y - _x - _r;
+    
+//    rt_kprin("%d %d %d %d\n",_lf, _lb, _rb, _rf);
+    
+    
+//    _lf = _x - _y - _r;
+//    _lb = _x + _y - _r;
+//    _rb = _x + _y + _r;
+//    _rf = _x - _y + _r;
         
 	motor_pwm_set1(_lf);
 	motor_pwm_set2(_lb);
@@ -169,9 +181,9 @@ static rt_thread_t mecanum_pwm_thread = RT_NULL;
 
 static void mecanum_pwm_thread_entry(void *parameter)
 {
-    rt_int16_t x = 0;
-    rt_int16_t y = 0;
-    rt_int16_t r = 0;
+    rt_int32_t x = 0;
+    rt_int32_t y = 0;
+    rt_int32_t r = 0;
 
     while (1)
     {
@@ -213,7 +225,13 @@ static void mecanum_pwm_thread_entry(void *parameter)
         r = (r - 1024) * 500 / 660;       
 #endif
 
-
+        /* 横向比例控制 */
+//        x = 2*(200 - distance_left);
+        
+        /* 旋转比例控制 */
+//        r = 2*(r_target - imu.yaw);
+        
+   
         chassis_control(x, y, r);
 
         rt_thread_mdelay(10);

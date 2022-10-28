@@ -6,7 +6,12 @@
 #include <board.h>
 
 
-#define DR16_UART       "uart1"      /* 串口设备名称 */
+#define DBUS_UART       "uart1"      /* 串口设备名称 */
+
+#define DBUS_THREAD_PRIORITY         25
+#define DBUS_THREAD_STACK_SIZE       1024
+#define DBUS_THREAD_TIMESLICE        10
+
 
 /* ----------------------- RC Channel Definition---------------------------- */
 #define RC_CH_VALUE_MIN             ((uint16_t)364 )

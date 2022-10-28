@@ -54,7 +54,7 @@
           <CreateLib>0</CreateLib>
           <CreateHexFile>0</CreateHexFile>
           <DebugInformation>1</DebugInformation>
-          <BrowseInformation>0</BrowseInformation>
+          <BrowseInformation>1</BrowseInformation>
           <ListingPath>.\build\keil\List\</ListingPath>
           <HexFormatSelection>1</HexFormatSelection>
           <Merge32K>0</Merge32K>
@@ -387,7 +387,7 @@
             <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
-              <FilePath>applications\main.c</FilePath>
+              <FilePath>.\applications\main.c</FilePath>
             </File>
             <File>
               <FileName>led.c</FileName>
@@ -403,6 +403,16 @@
               <FileName>mecanum.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\applications\mecanum.c</FilePath>
+            </File>
+            <File>
+              <FileName>imu.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\applications\imu.c</FilePath>
+            </File>
+            <File>
+              <FileName>ks103.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\applications\ks103.c</FilePath>
             </File>
           </Files>
         </Group>

@@ -51,7 +51,6 @@ static rt_err_t uart_input(rt_device_t dev, rt_size_t size)
 
 /*
     遥控器摇杆收到的数据范围 364-1684  中位 1024
-
 */
 
 static void dbus_thread_entry(void *parameter)
@@ -73,10 +72,10 @@ static void dbus_thread_entry(void *parameter)
             
             if (rx_length == RC_FRAME_LENGTH)        /* 长度正确，解析遥控器数据 */
             {
-                dbus.rh            = ((int16_t)rx_buffer[0] | ((int16_t)rx_buffer[1] << 8)) & 0x07FF;
-                dbus.rv            = (((int16_t)rx_buffer[1] >> 3) | ((int16_t)rx_buffer[2] << 5)) & 0x07FF;
-                dbus.lh            = (((int16_t)rx_buffer[2] >> 6) | ((int16_t)rx_buffer[3] << 2) | ((int16_t)rx_buffer[4] << 10)) & 0x07FF;
-                dbus.lv            = (((int16_t)rx_buffer[4] >> 1) | ((int16_t)rx_buffer[5]<<7)) & 0x07FF;
+                dbus.rh             = ((int16_t)rx_buffer[0] | ((int16_t)rx_buffer[1] << 8)) & 0x07FF;
+                dbus.rv             = (((int16_t)rx_buffer[1] >> 3) | ((int16_t)rx_buffer[2] << 5)) & 0x07FF;
+                dbus.lh             = (((int16_t)rx_buffer[2] >> 6) | ((int16_t)rx_buffer[3] << 2) | ((int16_t)rx_buffer[4] << 10)) & 0x07FF;
+                dbus.lv             = (((int16_t)rx_buffer[4] >> 1) | ((int16_t)rx_buffer[5]<<7)) & 0x07FF;
                 dbus.sl             = ((rx_buffer[5] >> 4) & 0x000C) >> 2;
                 dbus.sr             = ((rx_buffer[5] >> 4) & 0x0003);
                 dbus.mouse.x        = ((int16_t)rx_buffer[6]) | ((int16_t)rx_buffer[7] << 8);
@@ -103,10 +102,10 @@ int dbus_init(void)
     config.stop_bits = STOP_BITS_1;
     
     /* 查找串口设备 */
-    serial = rt_device_find(DR16_UART);
+    serial = rt_device_find(DBUS_UART);
     if (!serial)
     {
-        rt_kprintf("find %s failed!\n", DR16_UART);
+        rt_kprintf("find %s failed!\n", DBUS_UART);
         return RT_ERROR;
     }
 
@@ -127,7 +126,12 @@ int dbus_init(void)
     rt_device_set_rx_indicate(serial, uart_input);
 
     /* 创建 serial 线程 */
-    rt_thread_t thread = rt_thread_create("dbus", dbus_thread_entry, RT_NULL, 1024, 25, 10);
+    rt_thread_t thread = rt_thread_create("dbus",
+                                          dbus_thread_entry,
+                                          RT_NULL,
+                                          DBUS_THREAD_STACK_SIZE,
+                                          DBUS_THREAD_PRIORITY,
+                                          DBUS_THREAD_TIMESLICE);
     
     /* 创建成功则启动线程 */
     if (thread != RT_NULL)
@@ -142,8 +146,6 @@ int dbus_init(void)
     return ret;
 }
 
-/* 导出命令 or 自动初始化 */
-//MSH_CMD_EXPORT(dr16_init, dr16 remote controller init);
 INIT_APP_EXPORT(dbus_init);
 
 
