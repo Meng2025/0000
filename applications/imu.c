@@ -1,14 +1,11 @@
 #include "imu.h"
 
 
+rt_int32_t yaw = 0;
 
-#define IMU_THREAD_PRIORITY         25
-#define IMU_THREAD_STACK_SIZE       512
-#define IMU_THREAD_TIMESLICE        5
 
 static rt_thread_t imu_thread = RT_NULL;
 
-/* 线程 1 的入口函数 */
 static void imu_thread_entry(void *parameter)
 {
     while (1)
@@ -16,10 +13,12 @@ static void imu_thread_entry(void *parameter)
         mpu_get_data();
         imu_ahrs_update();
         imu_attitude_update(); 
-        HAL_Delay(5);
-        rt_kprintf("%d\n",imu.yaw*10);
-
-        rt_thread_mdelay(100);
+        
+        rt_thread_mdelay(5);
+        
+        yaw = (int)imu.yaw;
+        
+        rt_thread_mdelay(5);
     }
 }
 

@@ -1,10 +1,15 @@
 #include "sbus.h"
 
-#include "servo_pwm.h"
 
 /* 遥控器按键全局数据 */
-sbus_t fs_i6x;
-sbus_control_t control;
+sbus_t sbus = {
+    .ch1 = 1024,
+    .ch2 = 1024,
+    .ch3 = 1024,
+    .ch4 = 1024,
+};
+
+
 /*--------------------------  控制块  ---------------------------*/
 
 /* 串口设备句柄 */
@@ -44,47 +49,67 @@ static rt_err_t uart_input(rt_device_t dev, rt_size_t size)
 /*--------------------------  数据处理线程  ---------------------------*/
 
 /*
-    遥控器摇杆收到的数据范围 364-1684  中位 1024
-
+    sbus 的数据范围 352-1694  中位 1024
+    
 */
 
-static void dr16_uart1_thread_entry(void *parameter)
+static void sbus_uart1_thread_entry(void *parameter)
 {
     struct rx_msg msg;
     rt_err_t result;
     rt_uint32_t rx_length;
-    static char rx_buffer[RT_SERIAL_RB_BUFSZ + 1];
+    static char rx_bytefer[RT_SERIAL_RB_BUFSZ + 1];
     
-    static char* byte = rx_buffer;
+//    rt_int8_t data_count = 0;
+//    rt_uint8_t data[25];
+    
+    static char* byte = rx_bytefer;
 
     while (1)
     {
         rt_memset(&msg, 0, sizeof(msg));
+        
         /* 从消息队列中读取消息*/
         result = rt_mq_recv(&rx_mq, &msg, sizeof(msg), RT_WAITING_FOREVER);
         if (result == RT_EOK)
         {
             /* 从串口读取数据*/
-            rx_length = rt_device_read(msg.dev, 0, rx_buffer, msg.size);
-            
-            if (rx_length == 25)
+            rx_length = rt_device_read(msg.dev, 0, rx_bytefer, msg.size);     
+//            data_count = data_count + rx_length;
+//            
+//            rt_memcpy(&data[data_count - rx_length], rx_bytefer, rx_length); /* 数据附加 */
+
+            /* DMA搬运长度正确 */
+            if(rx_length==25)
             {
-                fs_i6x.ch1 = (byte[1] | byte[2] << 8) & 0x7ff;
-                fs_i6x.ch2 = (byte[2] >> 3 | byte[3] << 5) & 0x7ff;
-                fs_i6x.ch3 = (byte[3] >> 6 | byte[4] << 2 | byte[5] << 10) & 0x7ff;
-                fs_i6x.ch4 = (byte[5] >> 1 | byte[6] << 7) & 0x7ff;
-                fs_i6x.swa = (byte[6] >> 4 | byte[7] << 4) & 0x7ff;
-                fs_i6x.swb = (byte[7] >> 7 | byte[8] << 1 | byte[9] << 9) & 0x7ff;
-                fs_i6x.swc = (byte[9] >> 2 | byte[10] << 6) & 0x7ff;
-                fs_i6x.swd = (byte[10] >>5 | byte[11] << 3) & 0x7ff;
-                fs_i6x.vra = (byte[12] >>0 | byte[13] << 8) & 0x7ff;
-                fs_i6x.vrb = (byte[13] >> 3 | byte[14] << 5) & 0x7ff;
+//                data_count = 0;
+                
+                sbus.ch1 = (byte[1] >> 0 | byte[2] << 8) & 0x7ff;
+                sbus.ch2 = (byte[2] >> 3 | byte[3] << 5) & 0x7ff;
+                sbus.ch3 = (byte[3] >> 6 | byte[4] << 2 | byte[5] << 10) & 0x7ff;
+                sbus.ch4 = (byte[5] >> 1 | byte[6] << 7) & 0x7ff;
+                sbus.ch5 = (byte[6] >> 4 | byte[7] << 4) & 0x7ff;
+//                sbus.ch6 = (byte[7] >> 7 | byte[8] << 1 | byte[9] << 9) & 0x7ff;
+//                sbus.ch7 = (byte[9] >> 2 | byte[10] << 6) & 0x7ff;
+//                sbus.ch8 = (byte[10] >>5 | byte[11] << 3) & 0x7ff;
+//                sbus.ch9 = (byte[12] >>0 | byte[13] << 8) & 0x7ff;
+//                sbus.ch10 = (byte[13] >> 3 | byte[14] << 5) & 0x7ff;
+//                sbus.ch11 = (byte[14] >> 6 | (byte[15] << 2 ) | byte[16] << 10 ) & 0x07FF;
+//                sbus.ch12 = (byte[16] >> 1 | (byte[17] << 7 )) & 0x07FF;
+//                sbus.ch13 = (byte[17] >> 4 | (byte[18] << 4 )) & 0x07FF;
+//                sbus.ch14 = (byte[18] >> 7 | (byte[19] << 1 ) | byte[20] << 9 ) & 0x07FF;
+//                sbus.ch15 = (byte[20] >> 2 | (byte[21] << 6 )) & 0x07FF;
+//                sbus.ch16 = (byte[21] >> 5 | (byte[22] << 3 )) & 0x07FF;
+                
+//                rt_kprintf("%4d %4d\n", sbus.ch1, sbus.ch3);
+//                rt_kprintf("%4d %4d\n", sbus.ch2, sbus.ch4);                 
             }
+
         }
     }
 }
 
-int dr16_init(void)
+int sbus_init(void)
 {
     rt_err_t ret = RT_EOK;
     static char msg_pool[256];
@@ -97,10 +122,10 @@ int dr16_init(void)
     config.stop_bits = STOP_BITS_2;
     
     /* 查找串口设备 */
-    serial = rt_device_find(DR16_UART);
+    serial = rt_device_find(SBUS_UART);
     if (!serial)
     {
-        rt_kprintf("find %s failed!\n", DR16_UART);
+        rt_kprintf("find %s failed!\n", SBUS_UART);
         return RT_ERROR;
     }
 
@@ -121,7 +146,7 @@ int dr16_init(void)
     rt_device_set_rx_indicate(serial, uart_input);
 
     /* 创建 serial 线程 */
-    rt_thread_t thread = rt_thread_create("dr16", dr16_uart1_thread_entry, RT_NULL, 1024, 25, 10);
+    rt_thread_t thread = rt_thread_create("sbus", sbus_uart1_thread_entry, RT_NULL, 1024, 25, 10);
     
     /* 创建成功则启动线程 */
     if (thread != RT_NULL)
@@ -138,32 +163,28 @@ int dr16_init(void)
 
 /* 导出命令 or 自动初始化 */
 //MSH_CMD_EXPORT(dr16_init, dr16 remote controller init);
-INIT_APP_EXPORT(dr16_init);
+INIT_APP_EXPORT(sbus_init);
 
 /*--------------------------  调试输出线程  ---------------------------*/
 
-static void dr16_debug_thread_entry(void *parameter)
+static void sbus_debug_thread_entry(void *parameter)
 {
     while (1)
     {
-        rt_kprintf("%4d %4d\n", fs_i6x.ch1, fs_i6x.ch2);
-        rt_kprintf("%4d %4d\n", fs_i6x.ch3, fs_i6x.ch4);
-        rt_kprintf("%4d %4d\n", fs_i6x.vra, fs_i6x.vrb);
-        rt_kprintf("%d %d %d %d\n", fs_i6x.swa, fs_i6x.swb, fs_i6x.swc, fs_i6x.swd);
-//        rt_kprintf("%d \n", dr16.mouse.x);
-//        rt_kprintf("%d \n", dr16.mouse.y);
-//        rt_kprintf("%d \n", dr16.mouse.z);
-//        rt_kprintf("%d \n", dr16.mouse.press_l);
-//        rt_kprintf("%d \n", dr16.mouse.press_r);
-//        rt_kprintf("%d \n", dr16.key.v);
-        
+        rt_kprintf("%4d %4d\n", sbus.ch1, sbus.ch3);
+        rt_kprintf("%4d %4d\n", sbus.ch2, sbus.ch4);
+        rt_kprintf("%4d %4d %4d %4d\n", sbus.ch5, sbus.ch6, sbus.ch7, sbus.ch8);
+        rt_kprintf("%4d %4d %4d %4d\n", sbus.ch9, sbus.ch10, sbus.ch11, sbus.ch12);
+        rt_kprintf("%4d %4d %4d %4d\n", sbus.ch13, sbus.ch14, sbus.ch15, sbus.ch16);
+        rt_kprintf("----------------------------------\n");
+
         rt_thread_mdelay(1000);
     }
 }
 
-static int dr16_output(int argc, char *argv[])
+static int sbus_output(int argc, char *argv[])
 {
-    rt_thread_t thread = rt_thread_create("dr16_output", dr16_debug_thread_entry, RT_NULL, 1024, 25, 10);
+    rt_thread_t thread = rt_thread_create("sbus_output", sbus_debug_thread_entry, RT_NULL, 1024, 25, 10);
     /* 创建成功则启动线程 */
     if (thread != RT_NULL)
     {
@@ -173,4 +194,4 @@ static int dr16_output(int argc, char *argv[])
     return 0;
 }
 /* 导出到 msh 命令列表中 */
-MSH_CMD_EXPORT(dr16_output, remote controller data debug outputuart);
+MSH_CMD_EXPORT(sbus_output, remote controller data debug outputuart);

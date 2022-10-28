@@ -1,13 +1,13 @@
-#include "dr16.h"
+#include "dbus.h"
 
 /* 遥控器按键全局数据 */
-controller_t dr16 = {
-    .rc = { .ch0 = RC_CH_VALUE_OFFSET,
-            .ch1 = RC_CH_VALUE_OFFSET,
-            .ch2 = RC_CH_VALUE_OFFSET,
-            .ch3 = RC_CH_VALUE_OFFSET,
-            .s1  = RC_SW_MID,
-            .s2  = RC_SW_MID}
+dbus_t dbus = {
+    .rv = RC_CH_VALUE_OFFSET,
+    .rh = RC_CH_VALUE_OFFSET,
+    .lv = RC_CH_VALUE_OFFSET,
+    .lh = RC_CH_VALUE_OFFSET,
+    .sl  = RC_SW_MID,
+    .sr  = RC_SW_MID,
 };
 
 
@@ -54,7 +54,7 @@ static rt_err_t uart_input(rt_device_t dev, rt_size_t size)
 
 */
 
-static void dr16_uart1_thread_entry(void *parameter)
+static void dbus_thread_entry(void *parameter)
 {
     struct rx_msg msg;
     rt_err_t result;
@@ -73,24 +73,24 @@ static void dr16_uart1_thread_entry(void *parameter)
             
             if (rx_length == RC_FRAME_LENGTH)        /* 长度正确，解析遥控器数据 */
             {
-                dr16.rc.ch0          = ((int16_t)rx_buffer[0] | ((int16_t)rx_buffer[1] << 8)) & 0x07FF;
-                dr16.rc.ch1          = (((int16_t)rx_buffer[1] >> 3) | ((int16_t)rx_buffer[2] << 5)) & 0x07FF;
-                dr16.rc.ch2          = (((int16_t)rx_buffer[2] >> 6) | ((int16_t)rx_buffer[3] << 2) | ((int16_t)rx_buffer[4] << 10)) & 0x07FF;
-                dr16.rc.ch3          = (((int16_t)rx_buffer[4] >> 1) | ((int16_t)rx_buffer[5]<<7)) & 0x07FF;
-                dr16.rc.s1           = ((rx_buffer[5] >> 4) & 0x000C) >> 2;
-                dr16.rc.s2           = ((rx_buffer[5] >> 4) & 0x0003);
-                dr16.mouse.x         = ((int16_t)rx_buffer[6]) | ((int16_t)rx_buffer[7] << 8);
-                dr16.mouse.y         = ((int16_t)rx_buffer[8]) | ((int16_t)rx_buffer[9] << 8);
-                dr16.mouse.z         = ((int16_t)rx_buffer[10]) | ((int16_t)rx_buffer[11] << 8);
-                dr16.mouse.press_l   = rx_buffer[12];
-                dr16.mouse.press_r   = rx_buffer[13];
-                dr16.key.v           = ((int16_t)rx_buffer[14]);// | ((int16_t)rx_buffer[15] << 8);
+                dbus.rh            = ((int16_t)rx_buffer[0] | ((int16_t)rx_buffer[1] << 8)) & 0x07FF;
+                dbus.rv            = (((int16_t)rx_buffer[1] >> 3) | ((int16_t)rx_buffer[2] << 5)) & 0x07FF;
+                dbus.lh            = (((int16_t)rx_buffer[2] >> 6) | ((int16_t)rx_buffer[3] << 2) | ((int16_t)rx_buffer[4] << 10)) & 0x07FF;
+                dbus.lv            = (((int16_t)rx_buffer[4] >> 1) | ((int16_t)rx_buffer[5]<<7)) & 0x07FF;
+                dbus.sl             = ((rx_buffer[5] >> 4) & 0x000C) >> 2;
+                dbus.sr             = ((rx_buffer[5] >> 4) & 0x0003);
+                dbus.mouse.x        = ((int16_t)rx_buffer[6]) | ((int16_t)rx_buffer[7] << 8);
+                dbus.mouse.y        = ((int16_t)rx_buffer[8]) | ((int16_t)rx_buffer[9] << 8);
+                dbus.mouse.z        = ((int16_t)rx_buffer[10]) | ((int16_t)rx_buffer[11] << 8);
+                dbus.mouse.press_l  = rx_buffer[12];
+                dbus.mouse.press_r  = rx_buffer[13];
+                dbus.key.v          = ((int16_t)rx_buffer[14]);// | ((int16_t)rx_buffer[15] << 8);
             }
         }
     }
 }
 
-int dr16_init(void)
+int dbus_init(void)
 {
     rt_err_t ret = RT_EOK;
     static char msg_pool[256];
@@ -127,7 +127,7 @@ int dr16_init(void)
     rt_device_set_rx_indicate(serial, uart_input);
 
     /* 创建 serial 线程 */
-    rt_thread_t thread = rt_thread_create("dr16", dr16_uart1_thread_entry, RT_NULL, 1024, 25, 10);
+    rt_thread_t thread = rt_thread_create("dbus", dbus_thread_entry, RT_NULL, 1024, 25, 10);
     
     /* 创建成功则启动线程 */
     if (thread != RT_NULL)
@@ -144,18 +144,18 @@ int dr16_init(void)
 
 /* 导出命令 or 自动初始化 */
 //MSH_CMD_EXPORT(dr16_init, dr16 remote controller init);
-INIT_APP_EXPORT(dr16_init);
+INIT_APP_EXPORT(dbus_init);
 
 
 /*--------------------------  调试输出线程  ---------------------------*/
 
-static void dr16_debug_thread_entry(void *parameter)
+static void dbus_debug_thread_entry(void *parameter)
 {
     while (1)
     {
-        rt_kprintf("%4d %4d\n", dr16.rc.ch3, dr16.rc.ch1);
-        rt_kprintf("%4d %4d\n", dr16.rc.ch2, dr16.rc.ch0);
-        rt_kprintf("%4d %4d\n", dr16.rc.s1, dr16.rc.s2);
+        rt_kprintf("%4d %4d\n", dbus.lv, dbus.rv);
+        rt_kprintf("%4d %4d\n", dbus.lh, dbus.rh);
+        rt_kprintf("%4d %4d\n", dbus.sl, dbus.sr);
         
 //        rt_kprintf("%d \n", dr16.mouse.x);
 //        rt_kprintf("%d \n", dr16.mouse.y);
@@ -168,9 +168,9 @@ static void dr16_debug_thread_entry(void *parameter)
     }
 }
 
-static int dr16_output(int argc, char *argv[])
+static int dbus_output(int argc, char *argv[])
 {
-    rt_thread_t thread = rt_thread_create("dr16_output", dr16_debug_thread_entry, RT_NULL, 1024, 25, 10);
+    rt_thread_t thread = rt_thread_create("dbus_output", dbus_debug_thread_entry, RT_NULL, 1024, 25, 10);
     /* 创建成功则启动线程 */
     if (thread != RT_NULL)
     {
@@ -180,5 +180,5 @@ static int dr16_output(int argc, char *argv[])
     return 0;
 }
 /* 导出到 msh 命令列表中 */
-MSH_CMD_EXPORT(dr16_output, remote controller data debug outputuart);
+MSH_CMD_EXPORT(dbus_output, remote controller data debug outputuart);
 

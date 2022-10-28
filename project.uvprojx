@@ -389,6 +389,21 @@
               <FileType>1</FileType>
               <FilePath>applications\main.c</FilePath>
             </File>
+            <File>
+              <FileName>led.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\applications\led.c</FilePath>
+            </File>
+            <File>
+              <FileName>dbus.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\applications\dbus.c</FilePath>
+            </File>
+            <File>
+              <FileName>mecanum.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\applications\mecanum.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

@@ -1,5 +1,5 @@
-#ifndef __DR16_H__
-#define __DR16_H__
+#ifndef __DBUS_H__
+#define __DBUS_H__
 
 #include <rtthread.h>
 #include <rtdevice.h>
@@ -31,15 +31,13 @@
 
 typedef struct
 {
-    struct
-    {
-        rt_int16_t  ch0;
-        rt_int16_t  ch1;
-        rt_int16_t  ch2;
-        rt_int16_t  ch3;
-        rt_int8_t   s1;
-        rt_int8_t   s2;
-    }rc;
+    rt_int16_t  rv;
+    rt_int16_t  rh;
+    rt_int16_t  lv;
+    rt_int16_t  lh;
+    rt_int8_t   sl;
+    rt_int8_t   sr;
+    
     struct
     {
         int16_t x;
@@ -48,15 +46,16 @@ typedef struct
         uint8_t press_l;
         uint8_t press_r;
     }mouse;
+    
     struct
     {
         uint16_t v;
     }key;
-}controller_t;
+}dbus_t;
 
 
 
-extern controller_t dr16;
+extern dbus_t dbus;
 
 
 #endif
