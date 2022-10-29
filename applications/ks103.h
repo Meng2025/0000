@@ -8,11 +8,8 @@
 
 
 #define KS103_UART_1       "uart7"
-#define KS103_UART_2       "uart7"
-#define KS103_UART_3       "uart7"
-
-extern rt_uint16_t distance_left;
-
+#define KS103_UART_2       "uart8"
+#define KS103_UART_3       "uart6"
 
 
 

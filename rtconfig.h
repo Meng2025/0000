@@ -43,7 +43,7 @@
 #define RT_USING_DEVICE
 #define RT_USING_CONSOLE
 #define RT_CONSOLEBUF_SIZE 128
-#define RT_CONSOLE_DEVICE_NAME "uart6"
+#define RT_CONSOLE_DEVICE_NAME "uart2"
 #define RT_VER_NUM 0x50000
 #define ARCH_ARM
 #define RT_USING_CPU_FFS
@@ -179,6 +179,9 @@
 /* Arduino libraries */
 
 
+/* Projects */
+
+
 /* Sensors */
 
 
@@ -188,7 +191,23 @@
 /* Timing */
 
 
-/* Projects */
+/* Data Processing */
+
+
+/* Data Storage */
+
+/* Communication */
+
+
+/* Device Control */
+
+
+/* Other */
+
+/* Signal IO */
+
+
+/* Uncategorized */
 
 #define SOC_FAMILY_STM32
 #define SOC_SERIES_STM32F4
@@ -205,6 +224,7 @@
 #define BSP_USING_GPIO
 #define BSP_USING_UART
 #define BSP_USING_UART6
+#define BSP_USING_UART2
 #define BSP_USING_UART3
 #define BSP_USING_UART7
 #define BSP_USING_UART8

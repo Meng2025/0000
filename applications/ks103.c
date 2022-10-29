@@ -1,7 +1,7 @@
 #include "ks103.h"
 
 
-static const char send_data[3] = {0xe8, 0x02, 0xbc};
+static const char send_data[3] = {0xe8, 0x02, 0xb0};
 
 rt_uint16_t distance_lef   = 9999;
 rt_uint16_t distance_mid   = 9999;
@@ -81,6 +81,8 @@ static void ks103_thread_entry(void *parameter)
         }
         recive_data[1] = ch;
         distance_rig = (recive_data[0]<<8) | recive_data[1];
+        
+        rt_kprintf("%d %d %d\n",distance_lef, distance_mid, distance_rig);
 
         rt_thread_mdelay(20);
     }
@@ -92,25 +94,9 @@ static int ks103_thread_init(void)
  
     /* 查找系统中的串口设备 */
     serial_1 = rt_device_find(KS103_UART_1);
-    if (!serial_1)
-    {
-        rt_kprintf("find %s failed!\n", KS103_UART_1);
-        return RT_ERROR;
-    }
     serial_2 = rt_device_find(KS103_UART_2);
-    if (!serial_2)
-    {
-        rt_kprintf("find %s failed!\n", KS103_UART_2);
-        return RT_ERROR;
-    }
     serial_3 = rt_device_find(KS103_UART_3);
-    if (!serial_3)
-    {
-        rt_kprintf("find %s failed!\n", KS103_UART_3);
-        return RT_ERROR;
-    }
 
-    
     struct serial_configure config = RT_SERIAL_CONFIG_DEFAULT;  /* 初始化配置参数 */
     config.baud_rate = BAUD_RATE_9600;        //修改波特率为 9600
     config.data_bits = DATA_BITS_8;           //数据位 8

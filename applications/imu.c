@@ -18,7 +18,7 @@ static void imu_thread_entry(void *parameter)
         
         yaw = (int)imu.yaw;
         
-        rt_kprintf("%d\n",yaw);
+//        rt_kprintf("%d\n",yaw);
         
         rt_thread_mdelay(50);
     }

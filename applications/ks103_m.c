@@ -47,6 +47,8 @@ static void ks103_m_uart_thread_entry(void *parameter)
         recive_data[1] = ch;
         
         distance_middle = (recive_data[0]<<8) | recive_data[1];
+        
+        rt_kprintf("%d\n",distance_middle);
    
         rt_thread_mdelay(20);
     }

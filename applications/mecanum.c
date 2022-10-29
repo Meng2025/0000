@@ -184,6 +184,8 @@ static void mecanum_pwm_thread_entry(void *parameter)
     rt_int32_t x = 0;
     rt_int32_t y = 0;
     rt_int32_t r = 0;
+    
+    rt_uint16_t mode1 = RC_SW_UP;
 
     while (1)
     {
@@ -216,13 +218,35 @@ static void mecanum_pwm_thread_entry(void *parameter)
 /* 大疆 遥控器 */
 #ifdef  __DBUS_H__
 
-        x = dbus.lh;
-        y = dbus.lv;
-        r = dbus.rh;
+        x       = dbus.lh;
+        y       = dbus.lv;
+        r       = dbus.rh;
+        mode1   =   dbus.sl;
         
-        x = (x - 1024) * 500 / 660;
-        y = (y - 1024) * 500 / 660;
-        r = (r - 1024) * 500 / 660;       
+        /* 所有都遥控 */
+        if(mode1 == RC_SW_UP)
+        {
+            x = (x - 1024) * 200 / 660;
+            y = (y - 1024) * 800 / 660;
+            r = (r - 1024) * 100 / 660;
+        }
+
+
+        /* 自动中速前进，直接管平移和旋转 */
+        if(mode1 == RC_SW_MID)
+        {
+            x = (x - 1024) * 100 / 660;
+            y = 600;
+            r = (r - 1024) * 100 / 660;
+        }
+        
+        /* 自动高速前进，直接管平移和旋转 */
+        if(mode1 == RC_SW_MID)
+        {
+            x = (x - 1024) * 100 / 660;
+            y = 800;
+            r = (r - 1024) * 100 / 660;
+        }
 #endif
 
         /* 横向比例控制 */
@@ -231,7 +255,6 @@ static void mecanum_pwm_thread_entry(void *parameter)
         /* 旋转比例控制 */
 //        r = 2*(r_target - imu.yaw);
         
-   
         chassis_control(x, y, r);
 
         rt_thread_mdelay(10);
