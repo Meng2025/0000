@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include "motor_pwm.h"
-#include "dr16.h"
+#include "dbus.h"
 
 
 
@@ -37,9 +37,9 @@ static rt_thread_t motor_pwm_thread = RT_NULL;
 /* 线程 1 的入口函数 */
 static void motor_pwm_thread_entry(void *parameter)
 {
-    int ch3;
-    rt_int16_t dr16_left_key = 1;
-	
+    rt_int32_t speed;
+    rt_int32_t mode1 = RC_SW_UP;
+   
     struct rt_device_pwm *pwm_dev;      /* PWM设备句柄 */
     
     pwm_dev = (struct rt_device_pwm *)rt_device_find(PWM_MOTOR_DEV);
@@ -52,42 +52,39 @@ static void motor_pwm_thread_entry(void *parameter)
     
     while (1)
     {
-        ch3 = dr16.rc.ch3;
-        dr16_left_key   = dr16.rc.s1;
-        
-        if (dr16_left_key == RC_SW_UP) /* 左手 OFF 制动模式 */
+        speed = dbus.lv;
+        mode1 = dbus.sl;
+         
+        if (mode1 == RC_SW_UP) /* 左手 OFF 制动模式 */
         {
-            ch3 = 0; 
-            
+            speed = 0; 
             rt_pin_write(MOTOR_A1, PIN_LOW);
             rt_pin_write(MOTOR_A2, PIN_LOW);
         }
         else 
         {
-            ch3 = (ch3 - 1024) * 300 /660; /* 摇杆量转占空比 */
-            
-            if (ch3 == 0)
+            speed = (speed - 1024) * 200 /660; /* 摇杆量转占空比 */
+
+            if (speed == 0)
             {
                 rt_pin_write(MOTOR_A1, PIN_HIGH);
                 rt_pin_write(MOTOR_A2, PIN_HIGH);
             }
-            else if(ch3 > 0)
+            else if(speed > 0)
             {
                 rt_pin_write(MOTOR_A1, PIN_HIGH);
                 rt_pin_write(MOTOR_A2, PIN_LOW);			
             }
             else
             {
-                ch3 = - ch3;
+                speed = - speed;
                 rt_pin_write(MOTOR_A1, PIN_LOW);
                 rt_pin_write(MOTOR_A2, PIN_HIGH);
             }            
         }
 			
-        ch3 = ch3*10;
-
-        rt_pwm_set(pwm_dev, PWM_MOTOR_CH, 10000, ch3);        
-
+        speed = speed*10;
+        rt_pwm_set(pwm_dev, PWM_MOTOR_CH, 10000, speed);        
         rt_thread_mdelay(10);
     }
 }

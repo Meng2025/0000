@@ -15,7 +15,7 @@
 
 
 /* pwm电机控制线程 */
-#define MOTOR_PWM_PRIORITY         28
+#define MOTOR_PWM_PRIORITY         27
 #define MOTOR_PWM_STACK_SIZE       1024
 #define MOTOR_PWM_TIMESLICE        5
 

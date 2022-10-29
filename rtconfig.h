@@ -43,7 +43,7 @@
 #define RT_USING_DEVICE
 #define RT_USING_CONSOLE
 #define RT_CONSOLEBUF_SIZE 128
-#define RT_CONSOLE_DEVICE_NAME "uart2"
+#define RT_CONSOLE_DEVICE_NAME "uart6"
 #define RT_VER_NUM 0x50000
 #define ARCH_ARM
 #define RT_USING_CPU_FFS
@@ -60,7 +60,7 @@
 #define RT_USING_FINSH
 #define FINSH_USING_MSH
 #define FINSH_THREAD_NAME "tshell"
-#define FINSH_THREAD_PRIORITY 20
+#define FINSH_THREAD_PRIORITY 29
 #define FINSH_THREAD_STACK_SIZE 4096
 #define FINSH_USING_HISTORY
 #define FINSH_HISTORY_LINES 5
@@ -231,10 +231,9 @@
 #define BSP_USING_UART1
 #define BSP_UART1_RX_USING_DMA
 #define BSP_USING_PWM
+#define BSP_USING_PWM4
+#define BSP_USING_PWM4_CH1
 #define BSP_USING_PWM5
-#define BSP_USING_PWM5_CH1
-#define BSP_USING_PWM5_CH2
-#define BSP_USING_PWM5_CH3
 #define BSP_USING_PWM5_CH4
 
 /* Board extended module Drivers */

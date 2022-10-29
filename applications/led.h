@@ -6,15 +6,15 @@
 #include <board.h>
 
 
-#define LED_FLOW_PRIORITY         29
+#define LED_FLOW_PRIORITY         30
 #define LED_FLOW_STACK_SIZE       256
 #define LED_FLOW_TIMESLICE        5
 
-#define LED_FAST_PRIORITY         29
+#define LED_FAST_PRIORITY         30
 #define LED_FAST_STACK_SIZE       256
 #define LED_FAST_TIMESLICE        5
 
-#define LED_SLOW_PRIORITY         29
+#define LED_SLOW_PRIORITY         30
 #define LED_SLOW_STACK_SIZE       256
 #define LED_SLOW_TIMESLICE        5
 

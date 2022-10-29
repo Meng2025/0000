@@ -400,14 +400,19 @@
               <FilePath>.\applications\dbus.c</FilePath>
             </File>
             <File>
-              <FileName>mecanum.c</FileName>
+              <FileName>car_light.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\applications\mecanum.c</FilePath>
+              <FilePath>.\applications\car_light.c</FilePath>
             </File>
             <File>
-              <FileName>imu.c</FileName>
+              <FileName>motor_pwm.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\applications\imu.c</FilePath>
+              <FilePath>.\applications\motor_pwm.c</FilePath>
+            </File>
+            <File>
+              <FileName>servo_pwm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\applications\servo_pwm.c</FilePath>
             </File>
           </Files>
         </Group>

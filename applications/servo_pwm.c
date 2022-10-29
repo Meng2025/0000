@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include "servo_pwm.h"
-#include "dr16.h"
+#include "dbus.h"
 
 /*----------------------   pwm周期占空比初始化配置   --------------------------*/
 int servo_pwm_init(void)
@@ -35,7 +35,7 @@ static rt_thread_t servo_pwm_thread = RT_NULL;
 /* 线程 1 的入口函数 */
 static void servo_pwm_thread_entry(void *parameter)
 {
-    int ch2;
+    rt_int32_t pwm_duty;
 	
     struct rt_device_pwm *pwm_dev;      /* PWM设备句柄 */
     
@@ -43,13 +43,13 @@ static void servo_pwm_thread_entry(void *parameter)
     
     while (1)
     {
-        ch2 = dr16.rc.ch0;
-        
-        ch2 = (ch2 - 1024) * 300 /660; 
+        pwm_duty = dbus.rh;
 
-        ch2 = (1500 - ch2 + 40)*1000;
+        pwm_duty = (1024 - pwm_duty) * 150 / 660; 
+
+        pwm_duty = (1500 - pwm_duty + 20)*1000;
     
-        rt_pwm_set(pwm_dev, PWM_SERVO_CH, 20000000, ch2);   			
+        rt_pwm_set(pwm_dev, PWM_SERVO_CH, 20000000, pwm_duty);   			
 
         rt_thread_mdelay(10);
     }

@@ -12,7 +12,7 @@
 #define PWM_SERVO_CH        4
 
 /* pwm电机控制线程 */
-#define SERVO_PWM_PRIORITY         28
+#define SERVO_PWM_PRIORITY         26
 #define SERVO_PWM_STACK_SIZE       1024
 #define SERVO_PWM_TIMESLICE        5
 
