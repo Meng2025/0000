@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include "motor_pwm.h"
-#include "dbus.h"
-
+//#include "dbus.h"
+#include "sbus.h"
 
 
 /*----------------------   pwm周期占空比初始化配置   --------------------------*/
@@ -38,8 +38,7 @@ static rt_thread_t motor_pwm_thread = RT_NULL;
 static void motor_pwm_thread_entry(void *parameter)
 {
     rt_int32_t speed;
-    rt_int32_t mode1 = RC_SW_UP;
-   
+
     struct rt_device_pwm *pwm_dev;      /* PWM设备句柄 */
     
     pwm_dev = (struct rt_device_pwm *)rt_device_find(PWM_MOTOR_DEV);
@@ -52,36 +51,35 @@ static void motor_pwm_thread_entry(void *parameter)
     
     while (1)
     {
+#ifdef __DBUS_H__
         speed = dbus.lv;
-        mode1 = dbus.sl;
-         
-        if (mode1 == RC_SW_UP) /* 左手 OFF 制动模式 */
-        {
-            speed = 0; 
-            rt_pin_write(MOTOR_A1, PIN_LOW);
-            rt_pin_write(MOTOR_A2, PIN_LOW);
-        }
-        else 
-        {
-            speed = (speed - 1024) * 200 /660; /* 摇杆量转占空比 */
+        speed = (speed - 1024) * 200 /660; /* 摇杆量转占空比 */
+#endif
 
-            if (speed == 0)
-            {
-                rt_pin_write(MOTOR_A1, PIN_HIGH);
-                rt_pin_write(MOTOR_A2, PIN_HIGH);
-            }
-            else if(speed > 0)
-            {
-                rt_pin_write(MOTOR_A1, PIN_HIGH);
-                rt_pin_write(MOTOR_A2, PIN_LOW);			
-            }
-            else
-            {
-                speed = - speed;
-                rt_pin_write(MOTOR_A1, PIN_LOW);
-                rt_pin_write(MOTOR_A2, PIN_HIGH);
-            }            
+#ifdef  __SBUS_H__
+        speed = sbus.lv;
+        speed = (speed - SBUS_CH_OFFSET) * 200 /SBUS_CH_LENGTH; /* 摇杆量转占空比 */
+#endif        
+
+        
+
+        if (speed == 0)
+        {
+            rt_pin_write(MOTOR_A1, PIN_HIGH);
+            rt_pin_write(MOTOR_A2, PIN_HIGH);
         }
+        else if(speed > 0)
+        {
+            rt_pin_write(MOTOR_A1, PIN_HIGH);
+            rt_pin_write(MOTOR_A2, PIN_LOW);			
+        }
+        else
+        {
+            speed = - speed;
+            rt_pin_write(MOTOR_A1, PIN_LOW);
+            rt_pin_write(MOTOR_A2, PIN_HIGH);
+        }            
+
 			
         speed = speed*10;
         rt_pwm_set(pwm_dev, PWM_MOTOR_CH, 10000, speed);        

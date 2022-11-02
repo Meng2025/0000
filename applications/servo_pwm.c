@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include "servo_pwm.h"
-#include "dbus.h"
+//#include "dbus.h"
+#include "sbus.h"
 
 /*----------------------   pwm周期占空比初始化配置   --------------------------*/
 int servo_pwm_init(void)
@@ -41,14 +42,21 @@ static void servo_pwm_thread_entry(void *parameter)
     
     pwm_dev = (struct rt_device_pwm *)rt_device_find(PWM_SERVO_DEV);
     
+    
+
     while (1)
     {
+#ifdef  __DBUS_H__        
         pwm_duty = dbus.rh;
-
-        pwm_duty = (1024 - pwm_duty) * 150 / 660; 
-
+        pwm_duty = (1024 - pwm_duty) * 250 / 660; 
         pwm_duty = (1500 - pwm_duty + 20)*1000;
-    
+#endif
+
+#ifdef  __SBUS_H__
+        pwm_duty = sbus.rh;
+        pwm_duty = (SBUS_CH_OFFSET - pwm_duty) * 250 / SBUS_CH_LENGTH;
+        pwm_duty = (1500 - pwm_duty + 20)*1000;
+#endif        
         rt_pwm_set(pwm_dev, PWM_SERVO_CH, 20000000, pwm_duty);   			
 
         rt_thread_mdelay(10);

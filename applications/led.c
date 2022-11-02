@@ -23,8 +23,8 @@ static void led_flow_thread(void *parameter)
     rt_pin_write(LED7_PIN, PIN_HIGH);
     rt_pin_write(LED8_PIN, PIN_HIGH);
 
-      while (1)
-      { /* 依次点亮LED */
+    while (1)
+    { /* 依次点亮LED */
         rt_pin_write(LED1_PIN, PIN_LOW);
         rt_thread_mdelay(100);
         rt_pin_write(LED2_PIN, PIN_LOW);
@@ -52,7 +52,7 @@ static void led_flow_thread(void *parameter)
         rt_pin_write(LED8_PIN, PIN_HIGH);
         
         rt_thread_mdelay(1000);
-      }
+    }
 }
 
 int led_flow_start(void)

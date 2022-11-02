@@ -327,7 +327,7 @@
             <uThumb>0</uThumb>
             <uSurpInc>0</uSurpInc>
             <uC99>1</uC99>
-            <uGnu>0</uGnu>
+            <uGnu>1</uGnu>
             <useXO>0</useXO>
             <v6Lang>1</v6Lang>
             <v6LangP>1</v6LangP>
@@ -395,14 +395,9 @@
               <FilePath>.\applications\led.c</FilePath>
             </File>
             <File>
-              <FileName>dbus.c</FileName>
+              <FileName>servo_pwm.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\applications\dbus.c</FilePath>
-            </File>
-            <File>
-              <FileName>car_light.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\applications\car_light.c</FilePath>
+              <FilePath>.\applications\servo_pwm.c</FilePath>
             </File>
             <File>
               <FileName>motor_pwm.c</FileName>
@@ -410,9 +405,19 @@
               <FilePath>.\applications\motor_pwm.c</FilePath>
             </File>
             <File>
-              <FileName>servo_pwm.c</FileName>
+              <FileName>sbus.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\applications\servo_pwm.c</FilePath>
+              <FilePath>.\applications\sbus.c</FilePath>
+            </File>
+            <File>
+              <FileName>car_light.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\applications\car_light.c</FilePath>
+            </File>
+            <File>
+              <FileName>power.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\applications\power.c</FilePath>
             </File>
           </Files>
         </Group>

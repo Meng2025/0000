@@ -103,7 +103,7 @@ int jetson_uart_init(void)
     rt_device_set_rx_indicate(serial, uart_input);
 
     /* 创建 serial 线程 */
-    rt_thread_t thread = rt_thread_create("jetson", serial_thread_entry, RT_NULL, 1024, 25, 10);
+    rt_thread_t thread = rt_thread_create("jetson", serial_thread_entry, RT_NULL, NANO_STACK_SIZE, NANO_PRIORITY, NANO_TIMESLICE);
     /* 创建成功则启动线程 */
     if (thread != RT_NULL)
     {

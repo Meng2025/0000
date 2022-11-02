@@ -1,6 +1,5 @@
 #include "car_light.h"
-#include "dbus.h"
-
+#include "sbus.h"
 
 /*-------------------------------   自动刹车灯   -------------------------------*/
 #define break_limit     -80
@@ -9,31 +8,31 @@ static rt_thread_t break_light = RT_NULL;
 
 static void break_light_thread(void *parameter)
 {
-    rt_int16_t speed        = RC_CH_VALUE_OFFSET;
-    rt_int16_t last_speed   = RC_CH_VALUE_OFFSET;
-    rt_int8_t  s1           = RC_SW_UP;
+    rt_int16_t speed        = SBUS_CH_OFFSET;
+    rt_int16_t last_speed   = SBUS_CH_OFFSET;
+    rt_int16_t break_light  = SBUS_SW_MID;
 
     while (1)
     {
-        speed   = dbus.lv;
-        s1      = dbus.sl;
-
-        if (s1 == RC_SW_UP)     /* 左拨杆 OFF，熄灭刹车灯 */
+        speed       = sbus.lv;
+        break_light = sbus.se;
+       
+        if (break_light == SBUS_SW_UP)     /* SE外拨，熄灭刹车灯 */
         {
             rt_pin_write(LIGHT_BREAK_1, PIN_LOW);
             rt_pin_write(LIGHT_BREAK_2, PIN_LOW);
         }
-        else
+        else if (break_light == SBUS_SW_MID) /* SE中位，自动刹车灯 */
         {
             /* 停车自动亮刹车灯 */
-            if ( speed == RC_CH_VALUE_OFFSET )
+            if ( speed == SBUS_CH_OFFSET )
             {
                 rt_pin_write(LIGHT_BREAK_1, PIN_HIGH);
                 rt_pin_write(LIGHT_BREAK_2, PIN_HIGH);
             }
             
             /* 减速自动亮刹车灯 */
-            else if ( (speed > RC_CH_VALUE_OFFSET) && (speed - last_speed < break_limit))
+            else if ( (speed > SBUS_CH_OFFSET) && (speed - last_speed < break_limit))
             {
                 rt_pin_write(LIGHT_BREAK_1, PIN_HIGH);
                 rt_pin_write(LIGHT_BREAK_2, PIN_HIGH);
@@ -45,6 +44,11 @@ static void break_light_thread(void *parameter)
                 rt_pin_write(LIGHT_BREAK_1, PIN_LOW);
                 rt_pin_write(LIGHT_BREAK_2, PIN_LOW);
             }
+        }
+        else
+        {
+            rt_pin_write(LIGHT_BREAK_1, PIN_HIGH);
+            rt_pin_write(LIGHT_BREAK_2, PIN_HIGH);
         }
         last_speed = speed;
 
@@ -58,14 +62,16 @@ static rt_thread_t front_light = RT_NULL;
 
 static void front_light_thread(void *parameter)
 {
-    rt_int8_t   s1 = RC_SW_UP;
+    rt_uint16_t   flash = SBUS_CH_MIN;
+    rt_uint16_t   light = SBUS_CH_MIN;
 
     while (1)
     {
-        s1 = dbus.sl;
+        flash = sbus.sh;
+        light = sbus.sf;
         
         /* 会车闪灯三次 */
-        if (s1 == RC_SW_DOWN)     
+        if (flash == SBUS_CH_MAX)     
         {
             rt_pin_write(LIGHT_FRONT_1, PIN_HIGH);
             rt_pin_write(LIGHT_FRONT_2, PIN_HIGH);
@@ -93,7 +99,20 @@ static void front_light_thread(void *parameter)
             rt_thread_mdelay(150);
             
             rt_pin_write(LIGHT_FRONT_1, PIN_LOW);
-            rt_pin_write(LIGHT_FRONT_2, PIN_LOW);           
+            rt_pin_write(LIGHT_FRONT_2, PIN_LOW); 
+
+            rt_thread_mdelay(150);
+        }
+        
+        if (light == SBUS_SW_DOWN)
+        {
+            rt_pin_write(LIGHT_FRONT_1, PIN_HIGH);
+            rt_pin_write(LIGHT_FRONT_2, PIN_HIGH);        
+        }
+        else
+        {
+            rt_pin_write(LIGHT_FRONT_1, PIN_LOW);
+            rt_pin_write(LIGHT_FRONT_2, PIN_LOW);         
         }
 
         rt_thread_mdelay(300);
@@ -109,22 +128,22 @@ static rt_thread_t turn_light = RT_NULL;
 
 static void turn_light_thread(void *parameter)
 {
-    rt_int16_t direct = RC_CH_VALUE_OFFSET;
-    rt_int8_t       s2;
+    rt_int16_t direct = SBUS_CH_OFFSET;
+    rt_int16_t turn = SBUS_SW_MID;
     int l_status = PIN_LOW;
     int r_status = PIN_LOW;
 
 
     while (1)
     {
-        s2 = dbus.sr;
-        direct = dbus.rh;
+        turn = sbus.sg;
+        direct = sbus.rh;
         
         l_status = !rt_pin_read(LIGHT_LEFT_1);
         r_status = !rt_pin_read(LIGHT_RIGHT_1);
 
         /* 手自一体转向灯 */
-        if ( (s2 == RC_SW_UP) || (direct < RC_CH_VALUE_OFFSET - bandlimit))
+        if ( (turn == SBUS_SW_UP) || (direct < SBUS_CH_OFFSET - bandlimit))
         {
             rt_pin_write(LIGHT_LEFT_1, l_status);
             rt_pin_write(LIGHT_LEFT_2, l_status);
@@ -133,7 +152,7 @@ static void turn_light_thread(void *parameter)
             rt_pin_write(LIGHT_RIGHT_2, PIN_LOW);         
         }
 
-        else if ( (s2 == RC_SW_DOWN) || (direct > RC_CH_VALUE_OFFSET + bandlimit))
+        else if ( (turn == SBUS_SW_DOWN) || (direct > SBUS_CH_OFFSET + bandlimit))
         {
             rt_pin_write(LIGHT_RIGHT_1,r_status);
             rt_pin_write(LIGHT_RIGHT_2,r_status);
@@ -171,25 +190,17 @@ static void car_light_thread(void *parameter)
     rt_pin_mode(LIGHT_RIGHT_2, PIN_MODE_OUTPUT);
     
 
+    rt_pin_write(LIGHT_FRONT_1, PIN_HIGH);
+    rt_pin_write(LIGHT_FRONT_2, PIN_HIGH);
+    rt_pin_write(LIGHT_BREAK_1, PIN_HIGH);
+    rt_pin_write(LIGHT_BREAK_2, PIN_HIGH);    
+    rt_pin_write(LIGHT_LEFT_1,  PIN_HIGH);
+    rt_pin_write(LIGHT_LEFT_2,  PIN_HIGH);    
+    rt_pin_write(LIGHT_RIGHT_1, PIN_HIGH);
+    rt_pin_write(LIGHT_RIGHT_2, PIN_HIGH);
     
-    /* 全亮按键 */
-    rt_pin_mode(LIGHT_TEST_KEY, PIN_MODE_INPUT);
-    
-    
-    if (rt_pin_read(LIGHT_TEST_KEY) == 1)
-    {
-        rt_pin_write(LIGHT_FRONT_1, PIN_HIGH);
-        rt_pin_write(LIGHT_FRONT_2, PIN_HIGH);
-        rt_pin_write(LIGHT_BREAK_1, PIN_HIGH);
-        rt_pin_write(LIGHT_BREAK_2, PIN_HIGH);    
-        rt_pin_write(LIGHT_LEFT_1,  PIN_HIGH);
-        rt_pin_write(LIGHT_LEFT_2,  PIN_HIGH);    
-        rt_pin_write(LIGHT_RIGHT_1, PIN_HIGH);
-        rt_pin_write(LIGHT_RIGHT_2, PIN_HIGH);
-        
-        rt_thread_mdelay(5000);
-    }
-    
+    rt_thread_mdelay(3000);
+
     rt_pin_write(LIGHT_FRONT_1, PIN_LOW);
     rt_pin_write(LIGHT_FRONT_2, PIN_LOW);
     rt_pin_write(LIGHT_BREAK_1, PIN_LOW);

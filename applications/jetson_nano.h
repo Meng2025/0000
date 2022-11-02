@@ -8,6 +8,11 @@
 #define JETSON_UART       "uart3"      /* 串口设备名称 */
 
 
+
+#define NANO_PRIORITY         24
+#define NANO_STACK_SIZE       1024
+#define NANO_TIMESLICE        5
+
 extern rt_int32_t nano_data;
 
 
