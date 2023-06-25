@@ -10,7 +10,7 @@
       <TargetName>rt-thread</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
-      <pCCUsed>5060960::V5.06 update 7 (build 960)::.\ARMCC</pCCUsed>
+      <pCCUsed>5060960::V5.06 update 7 for Certification (build 960)::.\ARM_Compiler_5.06u7</pCCUsed>
       <uAC6>0</uAC6>
       <TargetOption>
         <TargetCommonOption>
@@ -410,34 +410,9 @@
               <FilePath>.\applications\sbus.c</FilePath>
             </File>
             <File>
-              <FileName>car_light.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\applications\car_light.c</FilePath>
-            </File>
-            <File>
               <FileName>power.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\applications\power.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>imu</GroupName>
-          <Files>
-            <File>
-              <FileName>bsp_imu.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\imu\bsp_imu.c</FilePath>
-            </File>
-            <File>
-              <FileName>spi.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\imu\spi.c</FilePath>
-            </File>
-            <File>
-              <FileName>gpio.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\imu\gpio.c</FilePath>
             </File>
           </Files>
         </Group>
